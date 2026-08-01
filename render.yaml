@@ -1,1 +1,34 @@
+services:
+  # Backend API
+  - type: web
+    name: mohsin-ai-backend
+    runtime: python
+    rootDir: ./
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mohsin-ai-db
+          property: connectionString
 
+  # Frontend
+  - type: web
+    name: mohsin-ai-frontend
+    runtime: python
+    rootDir: ./
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run frontend/streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: API_URL
+        fromService:
+          name: mohsin-ai-backend
+          type: web
+          property: host
+
+databases:
+  - name: mohsin-ai-db
+    databaseName: mohsin_ai
+    user: mohsin_ai_user
